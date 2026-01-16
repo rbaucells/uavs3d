@@ -64,6 +64,7 @@ elseif("${UAVS3D_TARGET_CPU}" MATCHES "armv7")
   # Add NEON support for ARMv7
   # Use hard float ABI to match the musleabihf toolchain
   # Use a specific CPU that supports NEON and hard float
+  # -mfloat-abi=softfp instead of hard for support for cpus without fpu
   set(ARMV7_FLAGS "-mcpu=cortex-a9 -mfpu=neon -mfloat-abi=hard")
   
   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${ARMV7_FLAGS}")
@@ -137,7 +138,7 @@ file(APPEND "${pc_file}" "Name: ${LIBNAME}\n")
 file(APPEND "${pc_file}" "Description: AVS3 decoder library \n")
 file(APPEND "${pc_file}" "Version: ${uavs3d_version}\n")
 if(CMAKE_USE_PTHREADS_INIT)
-  file(APPEND "${pc_file}" "Libs: -L\${libdir} -l${LIBNAME} -lm -lpthread\n")
+  file(APPEND "${pc_file}" "Libs: -L\${libdir} -l${LIBNAME} -lm ${CMAKE_THREAD_LIBS_INIT}\n")
 else()
   file(APPEND "${pc_file}" "Libs: -L\${libdir} -l${LIBNAME} -lm\n")
 file(APPEND "${pc_file}" "Libs.private: \n")
@@ -155,8 +156,8 @@ add_library(${LIBNAME} ${DIR_UAVS3D_SRC} ${UAVS3D_ASM_FILES})
 if (NOT MSVC)
     target_link_libraries(${LIBNAME} m)
 endif()
-if(CMAKE_USE_PTHREADS_INIT)
-target_link_libraries(${LIBNAME} pthread)
+if(TARGET Threads::Threads)
+target_link_libraries(${LIBNAME} Threads::Threads)
 endif()
 
 # install
